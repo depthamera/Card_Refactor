@@ -19,6 +19,7 @@
 /*.sln
 /*.slnx
 /*.csproj
+/*.csproj.user
 
 # Visual Studio DB
 /.vs/
