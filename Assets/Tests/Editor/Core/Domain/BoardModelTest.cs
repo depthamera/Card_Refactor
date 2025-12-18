@@ -28,6 +28,14 @@ namespace CardRefactor.Tests.Editor.Core.Domain
             }
         }
 
+        [TestCase(0, 5)]
+        [TestCase(5, -1)]
+        public void Constructor_InvalidSize_ThrowsException(int width, int height)
+        {
+            var ex = Assert.Throws<System.ArgumentOutOfRangeException>(() => new BoardModel(width, height));
+            Assert.That(ex.Message, Does.Contain("must be positive"));
+        }
+
         #endregion
 
         #region GetBlock

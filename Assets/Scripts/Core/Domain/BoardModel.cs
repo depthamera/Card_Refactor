@@ -9,6 +9,14 @@ namespace CardRefactor.Core.Domain
 
         public BoardModel(int width, int height)
         {
+            if(width <= 0 || height <= 0)
+            {
+                throw new System.ArgumentOutOfRangeException
+                (
+                    $"Width and Height must be positive. Invalid size: {width}x{height}"
+                );
+            }
+
             Width = width;
             Height = height;
             _grid = new BlockData[width, height];
