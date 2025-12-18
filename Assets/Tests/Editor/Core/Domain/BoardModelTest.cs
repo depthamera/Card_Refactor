@@ -5,6 +5,8 @@ namespace CardRefactor.Tests.Editor.Core.Domain
 {
     public class BoardModelTest
     {
+        #region Constructor
+
         [Test]
         public void Constructor_ValidSize_InitializesAllBlocksToNone()
         {
@@ -26,6 +28,9 @@ namespace CardRefactor.Tests.Editor.Core.Domain
             }
         }
 
+        #endregion
+
+        #region GetBlock
         [TestCase(-1, 0)]
         [TestCase(10, 10)]
         public void GetBlock_InvalidCoord_ReturnsNull(int x, int y)
@@ -42,20 +47,9 @@ namespace CardRefactor.Tests.Editor.Core.Domain
             Assert.IsNull(blockData);
         }
 
-        [TestCase(0, 0, ExpectedResult = true)]
-        [TestCase(4, 4, ExpectedResult = true)]
-        [TestCase(-1, 0, ExpectedResult = false)]
-        [TestCase(5, 5, ExpectedResult = false)]
-        public bool IsValid_VariousCoordinates_ReturnsCorrectResult(int x, int y)
-        {
-            // Arrange
-            int width = 5;
-            int height = 5;
-            var model = new BoardModel(width, height);
+        #endregion
 
-            // Act & Assert
-            return model.IsValid(x, y);
-        }
+        #region SetBlock
 
         [Test]
         public void SetBlock_ValidCoordinate_UpdatesGridCorrectly()
@@ -109,5 +103,26 @@ namespace CardRefactor.Tests.Editor.Core.Domain
             var checkBlockData = model.GetBlock(1, 1);
             Assert.AreEqual(originalBlockData, checkBlockData);
         }
+
+        #endregion
+
+        #region IsValid
+
+        [TestCase(0, 0, ExpectedResult = true)]
+        [TestCase(4, 4, ExpectedResult = true)]
+        [TestCase(-1, 0, ExpectedResult = false)]
+        [TestCase(5, 5, ExpectedResult = false)]
+        public bool IsValid_VariousCoordinates_ReturnsCorrectResult(int x, int y)
+        {
+            // Arrange
+            int width = 5;
+            int height = 5;
+            var model = new BoardModel(width, height);
+
+            // Act & Assert
+            return model.IsValid(x, y);
+        }
+
+        #endregion
     }
 }
