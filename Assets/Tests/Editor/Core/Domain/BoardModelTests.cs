@@ -3,7 +3,7 @@ using CardRefactor.Core.Domain;
 
 namespace CardRefactor.Tests.Editor.Core.Domain
 {
-    public class BoardModelTest
+    public class BoardModelTests
     {
         #region Constructor
 
