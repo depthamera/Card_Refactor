@@ -1,6 +1,6 @@
 namespace CardRefactor.Core.Domain
 {
-	public class BlockData
+	public struct BlockData : System.IEquatable<BlockData>
 	{
         public BlockType Type { get; private set; }
 
@@ -9,5 +9,19 @@ namespace CardRefactor.Core.Domain
             Type = type;
         }
 
+        public readonly bool Equals(BlockData other)
+        {
+            return Type == other.Type;
+        }
+
+        public override readonly bool Equals(object obj)
+        {
+            return obj is BlockData other && Equals(other);
+        }
+
+        public override readonly int GetHashCode()
+        {
+            return Type.GetHashCode();
+        }
     }
 }
