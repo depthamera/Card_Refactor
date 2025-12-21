@@ -1,39 +1,44 @@
-using NUnit.Framework;
 using CardRefactor.Core.Domain;
+using NUnit.Framework;
+using System;
+using Unity.Mathematics;
 
 namespace CardRefactor.Tests.Editor.Core.Domain
 {
-    public class BoardModelTests
+    public sealed class BoardModelTests
     {
+        private BoardData _data;
+        private BoardModel _model;
+        private readonly int2 _size = new(5, 5);
+
+        [SetUp]
+        public void Setup()
+        {
+            _data = new(_size);
+            _model = new BoardModel(_data);
+        }
+
         #region Constructor
 
         [Test]
-        public void Constructor_ValidSize_InitializesAllBlocksToNone()
+        public void Constructor_NullData_ThrowsException()
         {
-            // Arrange
-            int width = 5;
-            int height = 5;
-
-            // Act
-            var model = new BoardModel(width, height);
-
-            // Assert
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    var blockData = model.GetBlock(x, y);
-                    Assert.AreEqual(BlockType.None, blockData.Type);
-                }
-            }
+            // Arrange, Act & Assert
+            var ex = Assert.Throws<ArgumentNullException>(() => new BoardModel(null));
+            Assert.That(ex.ParamName, Is.EqualTo("data"));
         }
 
-        [TestCase(0, 5)]
-        [TestCase(5, -1)]
-        public void Constructor_InvalidSize_ThrowsException(int width, int height)
+        [Test]
+        public void Constructor_ValidData_SetsSizeProperty()
         {
-            var ex = Assert.Throws<System.ArgumentOutOfRangeException>(() => new BoardModel(width, height));
-            Assert.That(ex.Message, Does.Contain("must be positive"));
+            // Arrange
+            var data = new BoardData(_size);
+
+            // Act
+            var model = new BoardModel(data);
+
+            // Assert
+            Assert.That(model.Size, Is.EqualTo(_size));
         }
 
         #endregion
@@ -41,18 +46,29 @@ namespace CardRefactor.Tests.Editor.Core.Domain
         #region GetBlock
         [TestCase(-1, 0)]
         [TestCase(10, 10)]
-        public void GetBlock_InvalidCoord_ReturnsNull(int x, int y)
+        public void GetBlock_InvalidPosition_ThrowsException(int x, int y)
         {
             // Arrange
-            int width = 5;
-            int height = 5;
-            var model = new BoardModel(width, height);
+            var pos = new int2(x, y);
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => _model.GetBlock(pos));
+            Assert.That(ex.ParamName, Is.EqualTo("pos"));
+        }
+
+        [Test]
+        public void GetBlock_ValidPosition_ReturnsCorrectBlockData()
+        {
+            // Arrange
+            var pos = new int2(2, 3);
+            var expectedBlockData = new BlockData(BlockType.Green);
+            _data.GetBlockRef(pos) = expectedBlockData;
 
             // Act
-            var blockData = model.GetBlock(x, y);
+            var retrievedBlockData = _model.GetBlock(pos);
 
             // Assert
-            Assert.IsNull(blockData);
+            Assert.That(retrievedBlockData, Is.EqualTo(expectedBlockData));
         }
 
         #endregion
@@ -60,56 +76,31 @@ namespace CardRefactor.Tests.Editor.Core.Domain
         #region SetBlock
 
         [Test]
-        public void SetBlock_ValidCoordinate_UpdatesGridCorrectly()
+        public void SetBlock_ValidPosition_UpdatesGridCorrectly()
         {
             // Arrange
-            int width = 5;
-            int height = 5;
-            var model = new BoardModel(width, height);
+            var pos = new int2(2, 2);
             var newBlockData = new BlockData(BlockType.Red);
 
             // Act
-            model.SetBlock(2, 2, newBlockData);
+            _model.SetBlock(pos, newBlockData);
 
             // Assert
-            var retrievedBlockData = model.GetBlock(2, 2);
-            Assert.AreEqual(newBlockData, retrievedBlockData);
-        }       
+            var retrievedBlockData = _data.GetBlockRef(pos);
+            Assert.That(retrievedBlockData, Is.EqualTo(newBlockData));
+        }
 
         [TestCase(-1, 0)]
         [TestCase(10, 10)]
-        public void SetBlock_InvalidCoord_DoesNothing(int x, int y)
+        public void SetBlock_InvalidPosition_ThrowsException(int x, int y)
         {
             // Arrange
-            int width = 5;
-            int height = 5;
-            var model = new BoardModel(width, height);
-            var originalBlockData = model.GetBlock(0, 0);
+            var pos = new int2(x, y);
             var newBlockData = new BlockData(BlockType.Blue);
 
-            // Act
-            model.SetBlock(x, y, newBlockData);
-
-            // Assert
-            var checkBlockData = model.GetBlock(0, 0);
-            Assert.AreEqual(originalBlockData, checkBlockData);
-        }
-
-        [Test]
-        public void SetBlock_NullBlockData_DoesNothing()
-        {
-            // Arrange
-            int width = 5;
-            int height = 5;
-            var model = new BoardModel(width, height);
-            var originalBlockData = model.GetBlock(1, 1);
-
-            // Act
-            model.SetBlock(1, 1, null);
-
-            // Assert
-            var checkBlockData = model.GetBlock(1, 1);
-            Assert.AreEqual(originalBlockData, checkBlockData);
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => _model.SetBlock(pos, newBlockData));
+            Assert.That(ex.ParamName, Is.EqualTo("pos"));
         }
 
         #endregion
@@ -119,16 +110,14 @@ namespace CardRefactor.Tests.Editor.Core.Domain
         [TestCase(0, 0, ExpectedResult = true)]
         [TestCase(4, 4, ExpectedResult = true)]
         [TestCase(-1, 0, ExpectedResult = false)]
-        [TestCase(5, 5, ExpectedResult = false)]
-        public bool IsValid_VariousCoordinates_ReturnsCorrectResult(int x, int y)
+        [TestCase(10, 5, ExpectedResult = false)]
+        public bool IsValid_VariousPositon_ReturnsCorrectResult(int x, int y)
         {
             // Arrange
-            int width = 5;
-            int height = 5;
-            var model = new BoardModel(width, height);
+            var pos = new int2(x, y);
 
             // Act & Assert
-            return model.IsValid(x, y);
+            return _model.IsValidPosition(pos);
         }
 
         #endregion
